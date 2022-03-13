@@ -1,19 +1,19 @@
-import Drawer from "@mui/material/Drawer";
+import { useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import CardActionArea from "@mui/material/CardActionArea";
-import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
-import Divider from "@mui/material/Divider";
-import Grid from "@mui/material/Grid";
+import WebsiteDetailDrawer from "./WebsiteDetailDrawer";
 
 type WebsiteCardProps = {
   data: {
+    id: string;
     image: string;
     name: string;
     username: string;
+    website: string;
+    password: string;
   };
 };
 
@@ -23,47 +23,11 @@ const WebsiteCard = ({ data }: WebsiteCardProps) => {
 
   return (
     <Card sx={{ width: 250, background: "#f1f1f199" }}>
-      <Drawer
-        anchor="right"
+      <WebsiteDetailDrawer
+        data={data}
         open={detailOpen}
-        onClose={() => setDetailOpen(false)}
-      >
-        <Box sx={{ width: 500 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              p: 3,
-            }}
-          >
-            <img
-              src={image}
-              alt={name}
-              style={{ height: "100px", marginRight: "40px" }}
-            />
-            <Typography fontWeight="bold" variant="h5" noWrap>
-              {name}
-            </Typography>
-          </Box>
-          <Divider />
-          <Box p={4}>
-            <Grid container spacing={2}>
-              <Grid item xs={4}>
-                <Typography>Username</Typography>
-              </Grid>
-              <Grid item xs={8}>
-                123
-              </Grid>
-              <Grid item xs={4}>
-                <Typography>Password</Typography>
-              </Grid>
-              <Grid item xs={8}>
-                123
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Drawer>
+        setOpen={setDetailOpen}
+      />
       <CardActionArea onClick={() => setDetailOpen(true)}>
         <CardContent>
           <CardMedia

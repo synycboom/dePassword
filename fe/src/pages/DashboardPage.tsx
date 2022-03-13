@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useState } from "react";
 import { styled, useTheme, Theme, CSSObject } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -8,12 +8,15 @@ import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import AddIcon from "@mui/icons-material/Add";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import AppsIcon from "@mui/icons-material/Apps";
 import ConnectButton from "../components/ConnectButton";
 import WebsiteCard from "../components/WebsiteCard";
+import { Button } from "@mui/material";
+import WebsiteDetailDrawer from "../components/WebsiteDetailDrawer";
 
 const drawerWidth = 240;
 
@@ -103,7 +106,8 @@ const DashboardPageStyle = styled(Box)`
 
 export default function DashboardPage() {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -162,15 +166,26 @@ export default function DashboardPage() {
         </List>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3, pt: 10 }}>
+        <WebsiteDetailDrawer open={detailOpen} setOpen={setDetailOpen} />
+        <Button
+          variant="contained"
+          sx={{ ml: 1, mb: 1 }}
+          onClick={() => setDetailOpen(true)}
+        >
+          <AddIcon sx={{ mr: 0.5 }} /> Add Website
+        </Button>
         <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-          {[1, 1, 1, 1, 1, 1].map((index) => (
+          {[1, 2, 3, 4, 5, 6].map((index) => (
             <Box margin={1}>
               <WebsiteCard
                 data={{
+                  id: "1",
                   image:
                     "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/1280px-2021_Facebook_icon.svg.png",
-                  name: "Facebook",
-                  username: "manotien@gmail.com",
+                  name: "Facebook" + index,
+                  username: "manotien@gmail.com" + index,
+                  website: "www.facebook.com" + index,
+                  password: "testtest" + index,
                 }}
               />
             </Box>
