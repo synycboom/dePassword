@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "hardhat:deploy-v1": "hardhat --network hardhat deploy --reset --tags DePasswordV1"
+    "hardhat:deploy-v1": "hardhat --network hardhat deploy --reset --tags DePasswordV1",
+    "rinkeby:deploy-v1": "hardhat --network rinkeby  deploy --reset --tags DePasswordV1"
   },
   "author": "",
   "license": "MIT",
