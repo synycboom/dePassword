@@ -11,8 +11,50 @@ contract DePassword {
         string encryptedUsername;
         string encryptedPassword;
     }
+    struct File {
+        string name;
+        string encryptedSwarmReference;
+    }
 
     mapping(address => Credential[]) private _credentials;
+    mapping(address => File[]) private _files;
+
+    function fileCount() public view returns (uint256 count) {
+        return _files[msg.sender].length;
+    }
+
+    function addFile(File calldata _file) public {
+        _files[msg.sender].push(_file);
+    }
+
+    function updateFile(uint256 index, File calldata _file) public {
+        uint256 maxIndex = fileCount();
+        if (index >= maxIndex) {
+            revert IndexOutOfBound({targetIndex: index, maximumIndex: maxIndex});
+        }
+
+        _files[msg.sender][index] = _file;
+    }
+
+    function deleteFile(uint256 index) public {
+        uint256 maxIndex = fileCount();
+        if (index >= maxIndex) {
+            revert IndexOutOfBound({targetIndex: index, maximumIndex: maxIndex});
+        }
+
+        _files[msg.sender][index] = _files[msg.sender][maxIndex - 1];
+        _files[msg.sender].pop();
+    }
+
+    function listFiles() public view returns (File[] memory files) {
+        uint256 maxIndex = fileCount();
+        files = new File[](maxIndex);
+        for (uint256 i = 0; i < maxIndex; i++) {
+            File storage file = _files[msg.sender][i];
+
+            files[i] = file;
+        }
+    }
 
     function credentialCount() public view returns (uint256 count) {
         return _credentials[msg.sender].length;

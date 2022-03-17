@@ -10,6 +10,11 @@ type Credential = {
   encryptedPassword: string;
 };
 
+type File = {
+  name: string;
+  encryptedSwarmReference: string;
+}
+
 describe("DePassword", function () {
   let dePassword: DePassword;
 
@@ -28,6 +33,11 @@ describe("DePassword", function () {
     expect(credentialB.encryptedPassword).to.eq(credentialA.encryptedPassword);
   }
 
+  function compareFile(fileA: File, fileB: File) {
+    expect(fileA.name).to.eq(fileB.name);
+    expect(fileA.encryptedSwarmReference).to.eq(fileB.encryptedSwarmReference);
+  }
+
   describe("Two users are using the contract", () => {
     context("When listing empty credentials", () => {
       it("should work correctly", async () => {
@@ -38,7 +48,16 @@ describe("DePassword", function () {
       });
     });
 
-    context("When adding and listing", () => {
+    context("When listing empty files", () => {
+      it("should work correctly", async () => {
+        const [userA] = await ethers.getSigners();
+        const files = await dePassword.connect(userA).listFiles();
+
+        expect(files.length).to.eq(0);
+      });
+    });
+
+    context("When adding and listing credentials", () => {
       it("should work correctly", async () => {
         const [userA, userB] = await ethers.getSigners();
         const credentialA = {
@@ -70,7 +89,33 @@ describe("DePassword", function () {
       });
     });
 
-    context("When adding and updating", () => {
+    context("When adding and listing files", () => {
+      it("should work correctly", async () => {
+        const [userA, userB] = await ethers.getSigners();
+        const fileA = {
+          name: 'file-A',
+          encryptedSwarmReference: 'A',
+        };
+        const fileB = {
+          name: 'file-B',
+          encryptedSwarmReference: 'B',
+        };
+
+        await dePassword.connect(userA).addFile(fileA);
+        await dePassword.connect(userB).addFile(fileB);
+
+        const listA = await dePassword.connect(userA).listFiles();
+        const listB = await dePassword.connect(userB).listFiles();
+
+        expect(listA.length).to.eq(1);
+        compareFile(listA[0], fileA);
+
+        expect(listB.length).to.eq(1);
+        compareFile(listB[0], fileB);
+      });
+    });
+
+    context("When adding and updating credentials", () => {
       it("should revert if the index is out of bound", async () => {
         const [userA] = await ethers.getSigners();
         const credentialA = {
@@ -82,8 +127,6 @@ describe("DePassword", function () {
         };
 
         await dePassword.connect(userA).addCredential(credentialA);
-        
-
         await expect(
           dePassword.connect(userA).updateCredential(1, credentialA),
         ).to.be.revertedWith("IndexOutOfBound(1, 1)");
@@ -135,7 +178,55 @@ describe("DePassword", function () {
       })
     });
 
-    context("When adding and deleting", () => {
+    context("When adding and updating files", () => {
+      it("should revert if the index is out of bound", async () => {
+        const [userA] = await ethers.getSigners();
+        const fileA = {
+          name: "file-A",
+          encryptedSwarmReference: "A",
+        };
+
+        await dePassword.connect(userA).addFile(fileA);
+        await expect(
+          dePassword.connect(userA).updateFile(1, fileA),
+        ).to.be.revertedWith("IndexOutOfBound(1, 1)");
+      });
+
+      it("should add new files and update them correctly", async () => {
+        const [userA, userB] = await ethers.getSigners();
+        const fileA = {
+          name: "file-A",
+          encryptedSwarmReference: "A",
+        };
+        const fileB = {
+          name: "file-B",
+          encryptedSwarmReference: "B",
+        };
+
+        await dePassword.connect(userA).addFile(fileA);
+        await dePassword.connect(userB).addFile(fileB);
+
+        fileA.name += "#A";
+        fileA.encryptedSwarmReference += "#A";
+
+        fileB.name += "#B";
+        fileB.encryptedSwarmReference += "#B";
+
+        await dePassword.connect(userA).updateFile(0, fileA);
+        await dePassword.connect(userB).updateFile(0, fileB);
+
+        const listA = await dePassword.connect(userA).listFiles();
+        const listB = await dePassword.connect(userB).listFiles();
+
+        expect(listA.length).to.eq(1);
+        compareFile(listA[0], fileA);
+
+        expect(listB.length).to.eq(1);
+        compareFile(listB[0], fileB);
+      })
+    });
+
+    context("When adding and deleting credentials", () => {
       it("should revert if the index is out of bound", async () => {
         const [userA] = await ethers.getSigners();
         const credentialA = {
@@ -177,6 +268,45 @@ describe("DePassword", function () {
 
         const listA = await dePassword.connect(userA).listCredentials();
         const listB = await dePassword.connect(userB).listCredentials();
+
+        expect(listA.length).to.eq(0);
+        expect(listB.length).to.eq(0);
+      })
+    });
+
+    context("When adding and deleting files", () => {
+      it("should revert if the index is out of bound", async () => {
+        const [userA] = await ethers.getSigners();
+        const fileA = {
+          name: "file-A",
+          encryptedSwarmReference: "A",
+        };
+
+        await dePassword.connect(userA).addFile(fileA);
+        await expect(
+          dePassword.connect(userA).deleteFile(1),
+        ).to.be.revertedWith("IndexOutOfBound(1, 1)");
+      });
+
+      it("should add new credentials and update them correctly", async () => {
+        const [userA, userB] = await ethers.getSigners();
+        const fileA = {
+          name: "file-A",
+          encryptedSwarmReference: "A",
+        };
+        const fileB = {
+          name: "file-B",
+          encryptedSwarmReference: "B",
+        };
+
+        await dePassword.connect(userA).addFile(fileA);
+        await dePassword.connect(userB).addFile(fileB);
+
+        await dePassword.connect(userA).deleteFile(0);
+        await dePassword.connect(userB).deleteFile(0);
+
+        const listA = await dePassword.connect(userA).listFiles();
+        const listB = await dePassword.connect(userB).listFiles();
 
         expect(listA.length).to.eq(0);
         expect(listB.length).to.eq(0);
