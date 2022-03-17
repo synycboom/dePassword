@@ -1,19 +1,186 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { DePassword, DePassword__factory } from "../typechain";
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+type Credential = {
+  name: string;
+  website: string;
+  maskedUsername: string;
+  encryptedUsername: string;
+  encryptedPassword: string;
+};
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+describe("DePassword", function () {
+  let dePassword: DePassword;
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+  beforeEach(async () => {
+    const [deployer] = await ethers.getSigners();
+    const dePasswordFactory = await ethers.getContractFactory("DePassword", deployer) as DePassword__factory;
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+    dePassword = await dePasswordFactory.deploy();
+  });
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+  function compare(credentialA: Credential, credentialB: Credential) {
+    expect(credentialB.name).to.eq(credentialA.name);
+    expect(credentialB.website).to.eq(credentialA.website);
+    expect(credentialB.maskedUsername).to.eq(credentialA.maskedUsername);
+    expect(credentialB.encryptedUsername).to.eq(credentialA.encryptedUsername);
+    expect(credentialB.encryptedPassword).to.eq(credentialA.encryptedPassword);
+  }
+
+  describe("Two users are using the contract", () => {
+    context("When listing empty credentials", () => {
+      it("should work correctly", async () => {
+        const [userA] = await ethers.getSigners();
+        const credentials = await dePassword.connect(userA).listCredentials();
+
+        expect(credentials.length).to.eq(0);
+      });
+    });
+
+    context("When adding and listing", () => {
+      it("should work correctly", async () => {
+        const [userA, userB] = await ethers.getSigners();
+        const credentialA = {
+          name: "some-site-1",
+          website: "https://some-site-1.com",
+          maskedUsername: "a************b",
+          encryptedUsername: "#$%@#$@#$@#",
+          encryptedPassword: "@##$^$%^$%^",
+        };
+        const credentialB = {
+          name: "some-site-2",
+          website: "https://some-site-2.com",
+          maskedUsername: "c************d",
+          encryptedUsername: "*(($*&%#$&*^%",
+          encryptedPassword: "()&(&#$($%&",
+        };
+
+        await dePassword.connect(userA).addCredential(credentialA);
+        await dePassword.connect(userB).addCredential(credentialB);
+
+        const listA = await dePassword.connect(userA).listCredentials();
+        const listB = await dePassword.connect(userB).listCredentials();
+
+        expect(listA.length).to.eq(1);
+        compare(listA[0], credentialA);
+
+        expect(listB.length).to.eq(1);
+        compare(listB[0], credentialB);
+      });
+    });
+
+    context("When adding and updating", () => {
+      it("should revert if the index is out of bound", async () => {
+        const [userA] = await ethers.getSigners();
+        const credentialA = {
+          name: "some-site-1",
+          website: "https://some-site-1.com",
+          maskedUsername: "a************b",
+          encryptedUsername: "#$%@#$@#$@#",
+          encryptedPassword: "@##$^$%^$%^",
+        };
+
+        await dePassword.connect(userA).addCredential(credentialA);
+        
+
+        await expect(
+          dePassword.connect(userA).updateCredential(1, credentialA),
+        ).to.be.revertedWith("IndexOutOfBound(1, 1)");
+      });
+
+      it("should add new credentials and update them correctly", async () => {
+        const [userA, userB] = await ethers.getSigners();
+        const credentialA = {
+          name: "some-site-1",
+          website: "https://some-site-1.com",
+          maskedUsername: "a************b",
+          encryptedUsername: "#$%@#$@#$@#",
+          encryptedPassword: "@##$^$%^$%^",
+        };
+        const credentialB = {
+          name: "some-site-2",
+          website: "https://some-site-2.com",
+          maskedUsername: "c************d",
+          encryptedUsername: "*(($*&%#$&*^%",
+          encryptedPassword: "()&(&#$($%&",
+        };
+
+        await dePassword.connect(userA).addCredential(credentialA);
+        await dePassword.connect(userB).addCredential(credentialB);
+
+        credentialA.name = credentialA.name + "#A";
+        credentialA.website = credentialA.name + "#A";
+        credentialA.maskedUsername = credentialA.name + "#A";
+        credentialA.encryptedUsername = credentialA.name + "#A";
+        credentialA.encryptedPassword = credentialA.name + "#A";
+
+        credentialB.name = credentialA.name + "#B";
+        credentialB.website = credentialA.name + "#B";
+        credentialB.maskedUsername = credentialA.name + "#B";
+        credentialB.encryptedUsername = credentialA.name + "#B";
+        credentialB.encryptedPassword = credentialA.name + "#B";
+
+        await dePassword.connect(userA).updateCredential(0, credentialA);
+        await dePassword.connect(userB).updateCredential(0, credentialB);
+
+        const listA = await dePassword.connect(userA).listCredentials();
+        const listB = await dePassword.connect(userB).listCredentials();
+
+        expect(listA.length).to.eq(1);
+        compare(listA[0], credentialA);
+
+        expect(listB.length).to.eq(1);
+        compare(listB[0], credentialB);
+      })
+    });
+
+    context("When adding and deleting", () => {
+      it("should revert if the index is out of bound", async () => {
+        const [userA] = await ethers.getSigners();
+        const credentialA = {
+          name: "some-site-1",
+          website: "https://some-site-1.com",
+          maskedUsername: "a************b",
+          encryptedUsername: "#$%@#$@#$@#",
+          encryptedPassword: "@##$^$%^$%^",
+        };
+
+        await dePassword.connect(userA).addCredential(credentialA);
+        await expect(
+          dePassword.connect(userA).deleteCredential(1),
+        ).to.be.revertedWith("IndexOutOfBound(1, 1)");
+      });
+
+      it("should add new credentials and update them correctly", async () => {
+        const [userA, userB] = await ethers.getSigners();
+        const credentialA = {
+          name: "some-site-1",
+          website: "https://some-site-1.com",
+          maskedUsername: "a************b",
+          encryptedUsername: "#$%@#$@#$@#",
+          encryptedPassword: "@##$^$%^$%^",
+        };
+        const credentialB = {
+          name: "some-site-2",
+          website: "https://some-site-2.com",
+          maskedUsername: "c************d",
+          encryptedUsername: "*(($*&%#$&*^%",
+          encryptedPassword: "()&(&#$($%&",
+        };
+
+        await dePassword.connect(userA).addCredential(credentialA);
+        await dePassword.connect(userB).addCredential(credentialB);
+
+        await dePassword.connect(userA).deleteCredential(0);
+        await dePassword.connect(userB).deleteCredential(0);
+
+        const listA = await dePassword.connect(userA).listCredentials();
+        const listB = await dePassword.connect(userB).listCredentials();
+
+        expect(listA.length).to.eq(0);
+        expect(listB.length).to.eq(0);
+      })
+    });
   });
 });
