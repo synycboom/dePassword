@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "hardhat:deploy-v1": "hardhat --network hardhat deploy --reset --tags DePasswordV1"
   },
   "author": "",
   "license": "MIT",
@@ -31,6 +31,7 @@
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.6.1",
     "hardhat": "^2.9.1",
+    "hardhat-deploy": "^0.11.0",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^2.6.0",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
