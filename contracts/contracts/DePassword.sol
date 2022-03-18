@@ -30,7 +30,10 @@ contract DePassword {
     function updateFile(uint256 index, File calldata _file) public {
         uint256 maxIndex = fileCount();
         if (index >= maxIndex) {
-            revert IndexOutOfBound({targetIndex: index, maximumIndex: maxIndex});
+            revert IndexOutOfBound({
+                targetIndex: index,
+                maximumIndex: maxIndex
+            });
         }
 
         _files[msg.sender][index] = _file;
@@ -39,7 +42,10 @@ contract DePassword {
     function deleteFile(uint256 index) public {
         uint256 maxIndex = fileCount();
         if (index >= maxIndex) {
-            revert IndexOutOfBound({targetIndex: index, maximumIndex: maxIndex});
+            revert IndexOutOfBound({
+                targetIndex: index,
+                maximumIndex: maxIndex
+            });
         }
 
         _files[msg.sender][index] = _files[msg.sender][maxIndex - 1];
@@ -64,10 +70,15 @@ contract DePassword {
         _credentials[msg.sender].push(_credential);
     }
 
-    function updateCredential(uint256 index, Credential calldata _credential) public {
+    function updateCredential(uint256 index, Credential calldata _credential)
+        public
+    {
         uint256 maxIndex = credentialCount();
         if (index >= maxIndex) {
-            revert IndexOutOfBound({targetIndex: index, maximumIndex: maxIndex});
+            revert IndexOutOfBound({
+                targetIndex: index,
+                maximumIndex: maxIndex
+            });
         }
 
         _credentials[msg.sender][index] = _credential;
@@ -76,14 +87,23 @@ contract DePassword {
     function deleteCredential(uint256 index) public {
         uint256 maxIndex = credentialCount();
         if (index >= maxIndex) {
-            revert IndexOutOfBound({targetIndex: index, maximumIndex: maxIndex});
+            revert IndexOutOfBound({
+                targetIndex: index,
+                maximumIndex: maxIndex
+            });
         }
 
-        _credentials[msg.sender][index] = _credentials[msg.sender][maxIndex - 1];
+        _credentials[msg.sender][index] = _credentials[msg.sender][
+            maxIndex - 1
+        ];
         _credentials[msg.sender].pop();
     }
 
-    function listCredentials() public view returns (Credential[] memory credentials) {
+    function listCredentials()
+        public
+        view
+        returns (Credential[] memory credentials)
+    {
         uint256 maxIndex = credentialCount();
         credentials = new Credential[](maxIndex);
         for (uint256 i = 0; i < maxIndex; i++) {
