@@ -15,19 +15,18 @@ import Typography from "@mui/material/Typography";
 import CopyToClipboard from "./CopyToClipbaord";
 import { Button } from "@mui/material";
 import { useWeb3React } from "@web3-react/core";
-import { getPublicKey, encryptMessage, decryptMessage } from "../helpers";
+import {
+  getPublicKey,
+  encryptMessage,
+  decryptMessage,
+  maskedText,
+} from "../helpers";
+import { WebsiteData } from "../types";
 
 type WebsiteDetailDrawerProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  data?: {
-    id: string;
-    image: string;
-    name: string;
-    username: string;
-    website: string;
-    password: string;
-  };
+  data?: WebsiteData;
 };
 
 const INITIAL_VALUES = {
@@ -43,20 +42,24 @@ const WebsiteDetailDrawer = ({
   data,
 }: WebsiteDetailDrawerProps) => {
   const [values, setValues] = useState(INITIAL_VALUES);
+  const [showUsername, setShowUsername] = useState(!data);
+  const [showPassword, setShowPassword] = useState(!data);
   const { account } = useWeb3React();
 
   const clear = () => {
     setValues(INITIAL_VALUES);
+    setShowUsername(!data);
+    setShowPassword(!data);
   };
 
   useEffect(() => {
     if (open && data) {
-      const { name, username, website, password } = data;
+      const { name, website } = data;
       setValues({
         name,
         website,
-        username,
-        password,
+        username: "",
+        password: "",
       });
     } else {
       clear();
@@ -70,15 +73,41 @@ const WebsiteDetailDrawer = ({
     });
   };
 
+  const showField = async (
+    field: "name" | "website" | "username" | "password"
+  ) => {
+    if (field === "username") {
+      const decrypedMessage = await decryptMessage(
+        data?.encryptedUsername!,
+        account!
+      );
+      setValues({
+        ...values,
+        [field]: decrypedMessage,
+      });
+      setShowUsername(true);
+    }
+    if (field === "password") {
+      const decrypedMessage = await decryptMessage(
+        data?.encryptedPassword!,
+        account!
+      );
+      setValues({
+        ...values,
+        [field]: decrypedMessage,
+      });
+      setShowPassword(true);
+    }
+  };
+
   const onSave = async () => {
     const publicKey = await getPublicKey(account!);
-    console.log({ publicKey });
-    const encryptedMessage = encryptMessage(publicKey, JSON.stringify(values));
-    console.log({ encryptedMessage });
-    const decryptedMessage = JSON.parse(
-      await decryptMessage(encryptedMessage, account!)
-    );
-    console.log({ decryptedMessage });
+    const encryptedUsername = encryptMessage(publicKey, values.username);
+    const encryptedPassword = encryptMessage(publicKey, values.password);
+    const maskedUsername = maskedText(values.username, 2);
+    console.log({ encryptedUsername });
+    console.log({ encryptedPassword });
+    console.log({ maskedUsername });
   };
 
   const canSave =
@@ -127,10 +156,12 @@ const WebsiteDetailDrawer = ({
             />
             <FormTextField
               label="Username"
-              value={values.username}
+              value={showUsername ? values.username : data?.maskedUsername}
               field="username"
               copyable={!!values.username}
               onChange={onChange}
+              onClick={() => showField("username")}
+              show={showUsername}
             />
             <FormTextField
               label="Password"
@@ -139,6 +170,8 @@ const WebsiteDetailDrawer = ({
               type="password"
               copyable={!!values.password}
               onChange={onChange}
+              onClick={() => showField("password")}
+              show={showPassword}
             />
           </Grid>
         </Box>
@@ -191,8 +224,10 @@ const FormTextField = ({
   type,
   copyable,
   openLinked,
+  onClick,
+  show = true,
 }: any) => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true);
 
   return (
     <>
@@ -206,9 +241,11 @@ const FormTextField = ({
           <OutlinedInput
             type={showPassword ? "text" : "password"}
             onChange={(e) => onChange(e.target.value, field)}
-            value={value}
+            value={show ? value : "********"}
             fullWidth
             size="small"
+            onClick={!show ? onClick : null}
+            disabled={!show}
             endAdornment={
               <InputAdornment position="end">
                 <IconButton
@@ -217,6 +254,7 @@ const FormTextField = ({
                   onMouseDown={(event: React.MouseEvent<HTMLButtonElement>) => {
                     event.preventDefault();
                   }}
+                  disabled={!show}
                   edge="end"
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -228,6 +266,7 @@ const FormTextField = ({
                         sx={{ ml: 1.5 }}
                         edge="end"
                         onClick={() => copy(value)}
+                        disabled={!show}
                       >
                         <ContentCopyIcon />
                       </IconButton>
@@ -242,7 +281,9 @@ const FormTextField = ({
             value={value}
             onChange={(e) => onChange(e.target.value, field)}
             size="small"
+            onClick={!show ? onClick : null}
             fullWidth
+            disabled={!show}
             endAdornment={
               <InputAdornment position="end">
                 {copyable && (
@@ -250,6 +291,7 @@ const FormTextField = ({
                     {({ copy }: any) => (
                       <IconButton
                         sx={{ ml: 1.5 }}
+                        disabled={!show}
                         edge="end"
                         onClick={() => copy(value)}
                       >

@@ -5,21 +5,15 @@ import CardMedia from "@mui/material/CardMedia";
 import CardActionArea from "@mui/material/CardActionArea";
 import Typography from "@mui/material/Typography";
 import WebsiteDetailDrawer from "./WebsiteDetailDrawer";
+import { WebsiteData } from "../types";
 
 type WebsiteCardProps = {
-  data: {
-    id: string;
-    image: string;
-    name: string;
-    username: string;
-    website: string;
-    password: string;
-  };
+  data: WebsiteData;
 };
 
 const WebsiteCard = ({ data }: WebsiteCardProps) => {
   const [detailOpen, setDetailOpen] = useState(false);
-  const { image, name, username } = data;
+  const { image, name, maskedUsername } = data;
 
   return (
     <Card sx={{ width: 250, background: "#f1f1f199" }}>
@@ -40,7 +34,7 @@ const WebsiteCard = ({ data }: WebsiteCardProps) => {
           <Typography fontWeight="bold" noWrap>
             {name}
           </Typography>
-          <Typography noWrap>{username}</Typography>
+          <Typography noWrap>{maskedUsername}</Typography>
         </CardContent>
       </CardActionArea>
     </Card>

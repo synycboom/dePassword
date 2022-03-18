@@ -60,3 +60,9 @@ export const getPublicKey = (account: string): Promise<string> => {
       });
   });
 };
+
+export const maskedText = (text: string, showCount: number) => {
+  const head = text.slice(0, showCount);
+  const tail = text.slice(-showCount);
+  return `${head}${"*".repeat(text.length - showCount * 2)}${tail}`;
+};
