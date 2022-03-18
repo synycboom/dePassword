@@ -13,7 +13,9 @@ contract DePassword {
     }
     struct File {
         string name;
-        string encryptedSwarmReference;
+        string fileName;
+        string fileType;
+        string swarmReference;
     }
 
     mapping(address => Credential[]) private _credentials;
@@ -25,18 +27,6 @@ contract DePassword {
 
     function addFile(File calldata _file) public {
         _files[msg.sender].push(_file);
-    }
-
-    function updateFile(uint256 index, File calldata _file) public {
-        uint256 maxIndex = fileCount();
-        if (index >= maxIndex) {
-            revert IndexOutOfBound({
-                targetIndex: index,
-                maximumIndex: maxIndex
-            });
-        }
-
-        _files[msg.sender][index] = _file;
     }
 
     function deleteFile(uint256 index) public {

@@ -12,7 +12,9 @@ type Credential = {
 
 type File = {
   name: string;
-  encryptedSwarmReference: string;
+  fileName: string;
+  fileType: string;
+  swarmReference: string;
 }
 
 describe("DePassword", function () {
@@ -35,7 +37,7 @@ describe("DePassword", function () {
 
   function compareFile(fileA: File, fileB: File) {
     expect(fileA.name).to.eq(fileB.name);
-    expect(fileA.encryptedSwarmReference).to.eq(fileB.encryptedSwarmReference);
+    expect(fileA.swarmReference).to.eq(fileB.swarmReference);
   }
 
   describe("Two users are using the contract", () => {
@@ -94,11 +96,15 @@ describe("DePassword", function () {
         const [userA, userB] = await ethers.getSigners();
         const fileA = {
           name: 'file-A',
-          encryptedSwarmReference: 'A',
+          fileName: "test.png",
+          fileType: "image/png",
+          swarmReference: 'A',
         };
         const fileB = {
           name: 'file-B',
-          encryptedSwarmReference: 'B',
+          fileName: "test.png",
+          fileType: "image/png",
+          swarmReference: 'B',
         };
 
         await dePassword.connect(userA).addFile(fileA);
@@ -178,54 +184,6 @@ describe("DePassword", function () {
       })
     });
 
-    context("When adding and updating files", () => {
-      it("should revert if the index is out of bound", async () => {
-        const [userA] = await ethers.getSigners();
-        const fileA = {
-          name: "file-A",
-          encryptedSwarmReference: "A",
-        };
-
-        await dePassword.connect(userA).addFile(fileA);
-        await expect(
-          dePassword.connect(userA).updateFile(1, fileA),
-        ).to.be.revertedWith("IndexOutOfBound(1, 1)");
-      });
-
-      it("should add new files and update them correctly", async () => {
-        const [userA, userB] = await ethers.getSigners();
-        const fileA = {
-          name: "file-A",
-          encryptedSwarmReference: "A",
-        };
-        const fileB = {
-          name: "file-B",
-          encryptedSwarmReference: "B",
-        };
-
-        await dePassword.connect(userA).addFile(fileA);
-        await dePassword.connect(userB).addFile(fileB);
-
-        fileA.name += "#A";
-        fileA.encryptedSwarmReference += "#A";
-
-        fileB.name += "#B";
-        fileB.encryptedSwarmReference += "#B";
-
-        await dePassword.connect(userA).updateFile(0, fileA);
-        await dePassword.connect(userB).updateFile(0, fileB);
-
-        const listA = await dePassword.connect(userA).listFiles();
-        const listB = await dePassword.connect(userB).listFiles();
-
-        expect(listA.length).to.eq(1);
-        compareFile(listA[0], fileA);
-
-        expect(listB.length).to.eq(1);
-        compareFile(listB[0], fileB);
-      })
-    });
-
     context("When adding and deleting credentials", () => {
       it("should revert if the index is out of bound", async () => {
         const [userA] = await ethers.getSigners();
@@ -279,7 +237,9 @@ describe("DePassword", function () {
         const [userA] = await ethers.getSigners();
         const fileA = {
           name: "file-A",
-          encryptedSwarmReference: "A",
+          fileName: "test.png",
+          fileType: "image/png",
+          swarmReference: "A",
         };
 
         await dePassword.connect(userA).addFile(fileA);
@@ -292,11 +252,15 @@ describe("DePassword", function () {
         const [userA, userB] = await ethers.getSigners();
         const fileA = {
           name: "file-A",
-          encryptedSwarmReference: "A",
+          fileName: "test.png",
+          fileType: "image/png",
+          swarmReference: "A",
         };
         const fileB = {
           name: "file-B",
-          encryptedSwarmReference: "B",
+          fileName: "test.png",
+          fileType: "image/png",
+          swarmReference: "B",
         };
 
         await dePassword.connect(userA).addFile(fileA);
