@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import AddIcon from "@mui/icons-material/Add";
 import Layout from "../components/Layout";
 import FileCard from "../components/FileCard";
+import FileDetailDrawer from "../components/FileDetailDrawer";
 
 const PrivateFilePageStyle = styled("div")``;
 
@@ -13,6 +14,7 @@ const PrivateFilePage = () => {
 
   return (
     <PrivateFilePageStyle>
+      <FileDetailDrawer open={detailOpen} setOpen={setDetailOpen} />
       <Layout>
         <Button
           variant="contained"

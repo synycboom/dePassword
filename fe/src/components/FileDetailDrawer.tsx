@@ -123,7 +123,7 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
         <Divider />
         <Box p={4} pb={1}>
           <Grid container spacing={3} alignItems="center">
-            {!data ? (
+            {data ? (
               <Grid item xs={12} p={2}>
                 {isImage ? (
                   <img
@@ -141,7 +141,7 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
               </Grid>
             ) : (
               <>
-                <Grid item xs={3}>
+                <Grid item xs={2}>
                   <Typography textAlign="right" fontWeight="bold">
                     Name
                   </Typography>
@@ -170,11 +170,10 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
             )}
           </Grid>
         </Box>
-        <img src={`data:image/jpeg;base64,${base64}`} /> dsadadsa
         <Box px={4}>
           <Grid container spacing={2}>
-            <Grid item xs={4}>
-              {data ? (
+            {data ? (
+              <Grid item xs={4}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -183,7 +182,9 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
                 >
                   Download
                 </Button>
-              ) : (
+              </Grid>
+            ) : (
+              <Grid item xs={3}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -193,17 +194,13 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
                 >
                   Save
                 </Button>
-              )}
-            </Grid>
+              </Grid>
+            )}
             <Grid item xs={3}>
               <Button
                 variant="outlined"
                 fullWidth
-                // onClick={() => setOpen(false)}
-                onClick={() =>
-                  (window.location.href =
-                    "data:application/octet-stream;base64," + base64)
-                }
+                onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>

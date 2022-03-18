@@ -5,7 +5,6 @@ import Box from "@mui/material/Box";
 import CardActionArea from "@mui/material/CardActionArea";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-// import FileDetailDrawer from "./FileDetailDrawer";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import FileDetailDrawer from "./FileDetailDrawer";
 

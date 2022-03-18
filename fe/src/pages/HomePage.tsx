@@ -33,7 +33,7 @@ const HomePage = () => {
         <span style={{ color: "red" }}>De</span>Password
       </Typography>
       <Typography variant="h5" noWrap component="div" marginBottom={4}>
-        Decentralize Password Management
+        Decentralized Password Management
       </Typography>
       <img className="logo" src="/images/password-64px.png" alt="logo" />
       <ConnectButton />

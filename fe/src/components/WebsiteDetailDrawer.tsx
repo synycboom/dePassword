@@ -14,6 +14,8 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CopyToClipboard from "./CopyToClipbaord";
 import { Button } from "@mui/material";
+import { useWeb3React } from "@web3-react/core";
+import { getPublicKey, encryptMessage, decryptMessage } from "../helpers";
 
 type WebsiteDetailDrawerProps = {
   open: boolean;
@@ -41,6 +43,7 @@ const WebsiteDetailDrawer = ({
   data,
 }: WebsiteDetailDrawerProps) => {
   const [values, setValues] = useState(INITIAL_VALUES);
+  const { account } = useWeb3React();
 
   const clear = () => {
     setValues(INITIAL_VALUES);
@@ -65,6 +68,17 @@ const WebsiteDetailDrawer = ({
       ...values,
       [field]: value,
     });
+  };
+
+  const onSave = async () => {
+    const publicKey = await getPublicKey(account!);
+    console.log({ publicKey });
+    const encryptedMessage = encryptMessage(publicKey, JSON.stringify(values));
+    console.log({ encryptedMessage });
+    const decryptedMessage = JSON.parse(
+      await decryptMessage(encryptedMessage, account!)
+    );
+    console.log({ decryptedMessage });
   };
 
   const canSave =
@@ -135,6 +149,7 @@ const WebsiteDetailDrawer = ({
                 variant="contained"
                 color="primary"
                 fullWidth
+                onClick={onSave}
                 disabled={!canSave}
               >
                 Save

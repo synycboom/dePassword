@@ -34,7 +34,7 @@ export default function DashboardPage() {
         </Button>
         <Box sx={{ display: "flex", flexWrap: "wrap" }}>
           {[1, 2, 3, 4, 5, 6].map((index) => (
-            <Box margin={1}>
+            <Box margin={1} key={index}>
               <WebsiteCard
                 data={{
                   id: "1",
