@@ -40,6 +40,19 @@ describe("DePassword", function () {
     expect(fileA.swarmReference).to.eq(fileB.swarmReference);
   }
 
+  describe("Updating and getting keys", () => {
+    it("should update a key and getting the same key", async () => {
+        const [userA] = await ethers.getSigners();
+        const key = "encrypted";
+
+        await dePassword.connect(userA).updateKey(key);
+
+        const gotkey = await dePassword.connect(userA).getKey();
+
+        expect(gotkey).to.eq(key);
+    });
+
+  });
   describe("Two users are using the contract", () => {
     context("When listing empty credentials", () => {
       it("should work correctly", async () => {
