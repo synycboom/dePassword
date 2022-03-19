@@ -25,5 +25,7 @@ export type FileUpload = {
 
 export type FileUploadData = {
   index: number;
-  fileBase64?: string;
+  fileName: string;
+  fileType: string;
+  downloadUrl?: string;
 } & FileUpload;

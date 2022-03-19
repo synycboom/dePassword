@@ -3,6 +3,16 @@ import setting from "../setting";
 import abi from "./abi";
 import { Credential, FileUpload } from "../types";
 
+const randomBytes = (n: number) => {
+  const a = new Uint8Array(n);
+  const quota = 65536;
+  for (let i = 0; i < n; i += quota) {
+    window.crypto.getRandomValues(a.subarray(i, i + Math.min(n - i, quota)));
+  }
+
+  return a;
+};
+
 export const getSigner = () => {
   const provider = new ethers.providers.Web3Provider(window.ethereum!);
   const signer = provider.getSigner(0);
@@ -62,4 +72,16 @@ export const deleteFile = async (index: number) => {
   const result = await contract.deleteFile(index);
   await result.wait(1);
   return result;
+};
+
+export const generateKey = async () => {
+  const contract = getContract();
+  const key = randomBytes(32);
+  const result = await contract.updateKey(key);
+  await result.wait(1);
+};
+
+export const getKey = async () => {
+  const contract = getContract();
+  return contract.getKey();
 };

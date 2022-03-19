@@ -10,6 +10,7 @@ import { useWeb3React } from "@web3-react/core";
 import FileDetailDrawer from "./FileDetailDrawer";
 import { FileUploadData } from "../types";
 import { decryptMessage } from "../helpers";
+import { downloadFile } from "../helpers/api";
 
 type FileCardProps = {
   data: FileUploadData;
@@ -18,19 +19,48 @@ type FileCardProps = {
 
 const FileCard = ({ data, onSaved }: FileCardProps) => {
   const [detailOpen, setDetailOpen] = useState(false);
-  const [fileBase64, setFileBase64] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
   const { account } = useWeb3React();
-  const { name } = data;
+  const { fileName, fileType } = data;
 
   const saved = () => {
     setDetailOpen(false);
     onSaved();
   };
 
+  const decryptFile = async (
+    file: Blob,
+  ): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onerror = function () {
+        console.log("can't read the file");
+        reject();
+      };
+      reader.onload = async function (event) {
+        try {
+          const decryptedContent = await decryptMessage((event?.target?.result as string) || "", account!);
+
+          resolve(new Blob([decryptedContent]));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
+  };
+
   const onOpen = async () => {
-    const encryptedFile = data.swarmReference;
-    const decrypedFile = await decryptMessage(encryptedFile, account!);
-    setFileBase64(decrypedFile);
+    const { swarmReference } = data;
+    console.log(data);
+    const encryptedBlob = await downloadFile(swarmReference);
+    // const encryptedContent = await encryptedBlob.text();
+    // const decrypedContent = await decryptMessage(encryptedContent, account!);
+    const decryptedBlob = await decryptFile(encryptedBlob);
+    const downloadUrl = window.URL.createObjectURL(decryptedBlob);
+
+    setDownloadUrl(downloadUrl);
     setDetailOpen(true);
   };
 
@@ -39,7 +69,7 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
       <FileDetailDrawer
         data={{
           ...data,
-          fileBase64,
+          downloadUrl,
         }}
         open={detailOpen}
         setOpen={setDetailOpen}
@@ -60,7 +90,7 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
           </Box>
           <Divider />
           <Typography fontWeight="" noWrap pt={2}>
-            {name}
+            {fileName}
           </Typography>
         </CardContent>
       </CardActionArea>

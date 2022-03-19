@@ -12,7 +12,7 @@ import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import { ActualFileObject } from "filepond";
 import { FileUploadData } from "../types";
-import { getPublicKey, encryptMessage } from "../helpers";
+import { getPublicKey, encryptMessage, decryptMessage } from "../helpers";
 import CircularProgress from "@mui/material/CircularProgress";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 
@@ -20,7 +20,7 @@ import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { useWeb3React } from "@web3-react/core";
 import { addFile, deleteFile } from "../contract";
-import { uploadFileToSwarm } from "../helpers/api";
+import { uploadFile } from '../helpers/api';
 
 registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateSize);
 
@@ -51,14 +51,13 @@ const FileDetailDrawer = ({
 }: FileDetailDrawerProps) => {
   const [name, setName] = useState("");
   const [file, setFile] = useState<ActualFileObject | null>(null);
-  const [fileBase64, setFileBase64] = useState("");
   const { account } = useWeb3React();
   const [loading, setLoading] = useState(false);
+  const [encrypting, setEncrypting] = useState(false);
 
   const clear = () => {
     setName("");
     setFile(null);
-    setFileBase64("");
   };
 
   useEffect(() => {
@@ -68,15 +67,14 @@ const FileDetailDrawer = ({
   }, [open, data]);
 
   const onFileChange = async (files: any) => {
-    if (files.length) {
-      const file = files[0].file;
-      setFile(file);
-      const base64 = await convertFileToBase64(file);
-      setFileBase64(base64);
-    } else {
+    if (!files.length) {
       setFile(null);
-      setFileBase64("");
+
+      return;
     }
+
+    const file = files[0].file;
+    setFile(file);
   };
 
   const convertFileToBase64 = async (
@@ -97,21 +95,51 @@ const FileDetailDrawer = ({
     });
   };
 
-  const onSave = async () => {
-    if (!file || !fileBase64 || !name) return;
+  const encryptFile = async (
+    file: ActualFileObject
+  ): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-    const publicKey = await getPublicKey(account!);
-    const encryptedFile = encryptMessage(publicKey, fileBase64);
-    setLoading(true);
-    // const result = await uploadFileToSwarm(encryptedFile);
-    // console.log(result);
-    const fileData = {
-      name,
-      fileName: file.name,
-      fileType: file.type,
-      swarmReference: encryptedFile,
-    };
+      reader.onerror = function () {
+        console.log("can't read the file");
+        reject();
+      };
+      reader.onload = async function (event) {
+        try {
+          const publicKey = await getPublicKey(account!);
+          const encryptedContent = encryptMessage(publicKey, (event?.target?.result as string) || "");
+
+          resolve(new Blob([encryptedContent]));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
+  };
+
+  const onSave = async () => {
+    if (!file || !name) return;
+
+    let reference = '';
     try {
+      setEncrypting(true);
+      const blob = await encryptFile(file);
+      const encryptedFile = new File([blob], file.name ,{ type: file.type, lastModified: file.lastModified});
+      reference = await uploadFile(encryptedFile);
+    } finally {
+      setEncrypting(false);
+    }
+
+    try {
+      setLoading(true);
+      const fileData = {
+        name,
+        fileName: file.name,
+        fileType: file.type,
+        swarmReference: reference,
+      };
       await addFile(fileData);
     } catch (e) {
       console.log(e);
@@ -131,7 +159,7 @@ const FileDetailDrawer = ({
     }
   };
 
-  const canSave = !!name && !!fileBase64;
+  const canSave = !!name && !!file;
 
   return (
     <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
@@ -156,6 +184,28 @@ const FileDetailDrawer = ({
             </Typography>
           </Box>
         )}
+
+        {encrypting && (
+          <Box
+            sx={{
+              position: "absolute",
+              height: "100%",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backdropFilter: "blur(2px)",
+              zIndex: 1,
+              flexDirection: "column",
+            }}
+          >
+            <CircularProgress size={80} />
+            <Typography variant="h6" pt={2}>
+              Encrypting file ...
+            </Typography>
+          </Box>
+        )}
+
         <Box
           sx={{
             display: "flex",
@@ -175,7 +225,7 @@ const FileDetailDrawer = ({
                 {data.fileType.includes("image") ? (
                   <img
                     className="preview-image"
-                    src={`data:${data.fileType};base64, ${data.fileBase64}`}
+                    src={data.downloadUrl}
                     alt="file"
                   />
                 ) : (
@@ -224,7 +274,7 @@ const FileDetailDrawer = ({
                 <a
                   download={data.fileName}
                   style={{ textDecoration: "unset" }}
-                  href={`data:${data.fileType};base64, ${data.fileBase64}`}
+                  href={data.downloadUrl}
                 >
                   <Button
                     variant="contained"
