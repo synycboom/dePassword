@@ -116,7 +116,7 @@ export default function Layout({ children }: any) {
 
   return (
     <LayoutStyle>
-      <AppBar position="fixed" open={open} color="transparent">
+      <AppBar position="fixed" open={open} color="inherit">
         <Toolbar>
           <IconButton
             color="inherit"

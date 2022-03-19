@@ -1,20 +1,43 @@
+import { useState, useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
-import { useState } from "react";
 import Box from "@mui/material/Box";
 import AddIcon from "@mui/icons-material/Add";
 import Layout from "../components/Layout";
 import FileCard from "../components/FileCard";
 import FileDetailDrawer from "../components/FileDetailDrawer";
+import { getListFiles } from "../contract";
+import { FileUpload } from "../types";
 
 const PrivateFilePageStyle = styled("div")``;
 
 const PrivateFilePage = () => {
   const [detailOpen, setDetailOpen] = useState(false);
+  const [alert, setAlert] = useState(false);
+  const [files, setFiles] = useState([]);
+
+  useEffect(() => {
+    getFileList();
+  }, []);
+
+  const getFileList = async () => {
+    const fileList = await getListFiles();
+    setFiles(fileList);
+  };
+
+  const onSaved = () => {
+    setDetailOpen(false);
+    setAlert(true);
+    getFileList();
+  };
 
   return (
     <PrivateFilePageStyle>
-      <FileDetailDrawer open={detailOpen} setOpen={setDetailOpen} />
+      <FileDetailDrawer
+        open={detailOpen}
+        setOpen={setDetailOpen}
+        onSaved={onSaved}
+      />
       <Layout>
         <Button
           variant="contained"
@@ -24,13 +47,13 @@ const PrivateFilePage = () => {
           <AddIcon sx={{ mr: 0.5 }} /> Add File
         </Button>
         <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-          {[1, 2, 3, 4, 5, 6].map((index) => (
-            <Box margin={1}>
+          {files.map((file: FileUpload, index) => (
+            <Box margin={1} key={index}>
               <FileCard
+                onSaved={onSaved}
                 data={{
-                  id: 1,
-                  name: "TEST",
-                  file: "TEXT",
+                  ...file,
+                  index,
                 }}
               />
             </Box>

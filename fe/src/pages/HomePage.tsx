@@ -24,7 +24,9 @@ const HomePage = () => {
   const { account } = useWeb3React();
 
   useEffect(() => {
-    if (account) navigate("/dashboard");
+    if (account) {
+      navigate("/dashboard");
+    }
   }, [account, navigate]);
 
   return (

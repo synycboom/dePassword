@@ -6,24 +6,46 @@ import CardActionArea from "@mui/material/CardActionArea";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
+import { useWeb3React } from "@web3-react/core";
 import FileDetailDrawer from "./FileDetailDrawer";
+import { FileUploadData } from "../types";
+import { decryptMessage } from "../helpers";
 
 type FileCardProps = {
-  data: {
-    id: number;
-    name: string;
-    file: string;
-  };
+  data: FileUploadData;
+  onSaved: () => void;
 };
 
-const FileCard = ({ data }: FileCardProps) => {
+const FileCard = ({ data, onSaved }: FileCardProps) => {
   const [detailOpen, setDetailOpen] = useState(false);
-  const { id, name, file } = data;
+  const [fileBase64, setFileBase64] = useState("");
+  const { account } = useWeb3React();
+  const { name } = data;
+
+  const saved = () => {
+    setDetailOpen(false);
+    onSaved();
+  };
+
+  const onOpen = async () => {
+    const encryptedFile = data.swarmReference;
+    const decrypedFile = await decryptMessage(encryptedFile, account!);
+    setFileBase64(decrypedFile);
+    setDetailOpen(true);
+  };
 
   return (
     <Card sx={{ width: 250, background: "#f1f1f199" }}>
-      <FileDetailDrawer data={data} open={detailOpen} setOpen={setDetailOpen} />
-      <CardActionArea onClick={() => setDetailOpen(true)}>
+      <FileDetailDrawer
+        data={{
+          ...data,
+          fileBase64,
+        }}
+        open={detailOpen}
+        setOpen={setDetailOpen}
+        onSaved={saved}
+      />
+      <CardActionArea onClick={onOpen}>
         <CardContent>
           <Box
             py={4}

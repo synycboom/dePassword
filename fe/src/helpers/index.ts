@@ -1,4 +1,4 @@
-import { bufferToHex } from "ethereumjs-util";
+import { bufferToHex, hashPersonalMessage } from "ethereumjs-util";
 import { encrypt } from "@metamask/eth-sig-util";
 
 export const formatAddress = (address: string, showLength: number): string => {
@@ -45,9 +45,7 @@ export const getPublicKey = (account: string): Promise<string> => {
       params: [account],
     })
       .then((result: any) => {
-        console.log(result);
         resolve(result);
-        // encryptionPublicKey = result;
       })
       .catch((error) => {
         if (error.code === 4001) {
@@ -58,6 +56,14 @@ export const getPublicKey = (account: string): Promise<string> => {
         }
         reject();
       });
+  });
+};
+
+export const signMessage = async (account: string, message: string) => {
+  const messageHash = hashPersonalMessage(Buffer.from(message));
+  return window.ethereum!.request!({
+    method: "personal_sign",
+    params: [messageHash, account],
   });
 };
 

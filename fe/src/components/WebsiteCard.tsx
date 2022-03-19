@@ -1,19 +1,27 @@
 import { useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
+import Box from "@mui/material/Box";
 import CardActionArea from "@mui/material/CardActionArea";
 import Typography from "@mui/material/Typography";
 import WebsiteDetailDrawer from "./WebsiteDetailDrawer";
 import { WebsiteData } from "../types";
+import WebsiteLogo from "../components/WebsiteLogo";
 
 type WebsiteCardProps = {
   data: WebsiteData;
+  onSaved: () => void;
+  index?: number;
 };
 
-const WebsiteCard = ({ data }: WebsiteCardProps) => {
+const WebsiteCard = ({ data, onSaved }: WebsiteCardProps) => {
   const [detailOpen, setDetailOpen] = useState(false);
-  const { image, name, maskedUsername } = data;
+  const { name, maskedUsername } = data;
+
+  const saved = () => {
+    setDetailOpen(false);
+    onSaved();
+  };
 
   return (
     <Card sx={{ width: 250, background: "#f1f1f199" }}>
@@ -21,16 +29,20 @@ const WebsiteCard = ({ data }: WebsiteCardProps) => {
         data={data}
         open={detailOpen}
         setOpen={setDetailOpen}
+        onSaved={saved}
       />
       <CardActionArea onClick={() => setDetailOpen(true)}>
         <CardContent>
-          <CardMedia
-            sx={{ objectFit: "contain", mb: 2 }}
-            component="img"
-            height="100"
-            image={image}
-            alt={name}
-          />
+          <Box
+            sx={{
+              height: "100px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <WebsiteLogo website={data.website} />
+          </Box>
           <Typography fontWeight="bold" noWrap>
             {name}
           </Typography>

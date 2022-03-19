@@ -10,10 +10,15 @@ import { styled } from "@mui/material/styles";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
-import { ActualFileObject, FilePondFile } from "filepond";
+import { ActualFileObject } from "filepond";
+import { FileUploadData } from "../types";
+import { getPublicKey, encryptMessage, decryptMessage } from "../helpers";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+import { useWeb3React } from "@web3-react/core";
+import { addFile } from "../contract";
 
 registerPlugin(FilePondPluginImagePreview);
 
@@ -32,62 +37,50 @@ const ContainerStyle = styled(Box)`
 type FileDetailDrawerProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  data?: {
-    id: number;
-    file: string;
-    name: string;
-  };
+  data?: FileUploadData;
+  onSaved: () => void;
 };
 
-const INITIAL_VALUES = {
-  name: "",
-  file: [] as FilePondFile[],
-};
-
-const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
-  const [values, setValues] = useState(INITIAL_VALUES);
-  const [base64, setBase64] = useState("");
+const FileDetailDrawer = ({
+  open,
+  setOpen,
+  data,
+  onSaved,
+}: FileDetailDrawerProps) => {
+  const [name, setName] = useState("");
+  const [file, setFile] = useState<ActualFileObject | null>(null);
+  const [fileBase64, setFileBase64] = useState("");
+  const { account } = useWeb3React();
+  const [loading, setLoading] = useState(false);
 
   const clear = () => {
-    setValues(INITIAL_VALUES);
+    setName("");
+    setFile(null);
+    setFileBase64("");
   };
 
   useEffect(() => {
-    if (open && data) {
-      const { name, file } = data;
-      setValues({
-        name,
-        file: [],
-      });
-    } else {
+    if (!(open && data)) {
       clear();
     }
   }, [open, data]);
 
-  const onChange = (value: string, field: string) => {
-    setValues({
-      ...values,
-      [field]: value,
-    });
-  };
-
-  const setFile = (file: any) => {
-    onChange(file, "file");
+  const onFileChange = async (files: any) => {
+    const file = files[0].file;
+    setFile(file);
+    const base64 = await convertFileToBase64(file);
+    setFileBase64(base64);
   };
 
   const convertFileToBase64 = async (
     file: ActualFileObject
   ): Promise<string> => {
     return new Promise((resolve, reject) => {
-      console.log(file);
       const reader = new FileReader();
       reader.readAsBinaryString(file);
 
       reader.onload = function (event) {
-        // Convert file to Base64 string
-        // btoa is built int javascript function for base64 encoding
         const base64 = btoa((event?.target?.result as string) || "");
-
         resolve(base64);
       };
       reader.onerror = function () {
@@ -98,17 +91,55 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
   };
 
   const onSave = async () => {
-    const fileBase64 = await convertFileToBase64(values.file[0].file);
-    console.log(fileBase64);
-    setBase64(fileBase64);
+    if (!file || !fileBase64 || !name) return;
+
+    const publicKey = await getPublicKey(account!);
+    const encryptedFile = encryptMessage(publicKey, fileBase64);
+
+    setLoading(true);
+    const fileData = {
+      name,
+      fileName: file.name,
+      fileType: file.type,
+      swarmReference: encryptedFile,
+    };
+    try {
+      await addFile(fileData);
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
+    onSaved();
   };
 
-  const canSave = !!values.name && !!values.file.length;
+  const canSave = !!name && !!fileBase64;
   const isImage = true;
 
   return (
     <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
       <ContainerStyle>
+        {loading && (
+          <Box
+            sx={{
+              position: "absolute",
+              height: "100%",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backdropFilter: "blur(2px)",
+              zIndex: 1,
+              flexDirection: "column",
+            }}
+          >
+            <CircularProgress size={80} />
+            <Typography variant="h6" pt={2}>
+              Pending transaction ...
+            </Typography>
+          </Box>
+        )}
         <Box
           sx={{
             display: "flex",
@@ -128,9 +159,7 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
                 {isImage ? (
                   <img
                     className="preview-image"
-                    src={
-                      "https://freepikpsd.com/file/2019/11/transparent-png-example-Images.png"
-                    }
+                    src={`data:${data.fileType};base64, ${data.fileBase64}`}
                     alt="file"
                   />
                 ) : (
@@ -148,8 +177,9 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
                 </Grid>
                 <Grid item xs={9}>
                   <OutlinedInput
-                    value={values.name}
-                    onChange={(e) => onChange(e.target.value, "name")}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    // onChange={(e) => setName(e.target.value)}
                     size="small"
                     fullWidth
                   />
@@ -157,8 +187,8 @@ const FileDetailDrawer = ({ open, setOpen, data }: FileDetailDrawerProps) => {
                 <Grid item xs={12}>
                   <Box sx={{ cursor: "pointer" }}>
                     <FilePond
-                      files={values.file as any}
-                      onupdatefiles={setFile}
+                      files={file ? [file] : []}
+                      onupdatefiles={onFileChange}
                       allowMultiple={false}
                       maxFiles={1}
                       name="file"

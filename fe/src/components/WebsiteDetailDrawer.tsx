@@ -15,18 +15,22 @@ import Typography from "@mui/material/Typography";
 import CopyToClipboard from "./CopyToClipbaord";
 import { Button } from "@mui/material";
 import { useWeb3React } from "@web3-react/core";
+import CircularProgress from "@mui/material/CircularProgress";
 import {
   getPublicKey,
   encryptMessage,
   decryptMessage,
   maskedText,
 } from "../helpers";
+import { addCredential, deleteCredential, updateCredential } from "../contract";
 import { WebsiteData } from "../types";
+import WebsiteLogo from "../components/WebsiteLogo";
 
 type WebsiteDetailDrawerProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   data?: WebsiteData;
+  onSaved: () => void;
 };
 
 const INITIAL_VALUES = {
@@ -40,11 +44,20 @@ const WebsiteDetailDrawer = ({
   open,
   setOpen,
   data,
+  onSaved,
 }: WebsiteDetailDrawerProps) => {
   const [values, setValues] = useState(INITIAL_VALUES);
   const [showUsername, setShowUsername] = useState(!data);
   const [showPassword, setShowPassword] = useState(!data);
+  const [loading, setLoading] = useState(false);
   const { account } = useWeb3React();
+
+  const canSave =
+    (!!values.name &&
+      !!values.website &&
+      !!values.username &&
+      !!values.password) ||
+    !!data;
 
   const clear = () => {
     setValues(INITIAL_VALUES);
@@ -102,20 +115,78 @@ const WebsiteDetailDrawer = ({
 
   const onSave = async () => {
     const publicKey = await getPublicKey(account!);
-    const encryptedUsername = encryptMessage(publicKey, values.username);
-    const encryptedPassword = encryptMessage(publicKey, values.password);
-    const maskedUsername = maskedText(values.username, 2);
-    console.log({ encryptedUsername });
-    console.log({ encryptedPassword });
-    console.log({ maskedUsername });
+    let encryptedUsername = data?.encryptedUsername || "";
+    let encryptedPassword = data?.encryptedPassword || "";
+    if (showUsername) {
+      encryptedUsername = encryptMessage(publicKey, values.username);
+    }
+    if (showPassword) {
+      encryptedPassword = encryptMessage(publicKey, values.password);
+    }
+    const maskedUsername = values.username
+      ? maskedText(values.username, values.username.length <= 4 ? 1 : 2)
+      : data?.maskedUsername || "";
+
+    setLoading(true);
+    try {
+      if (data) {
+        await updateCredential(data.index, {
+          name: values.name,
+          website: values.website,
+          maskedUsername,
+          encryptedUsername,
+          encryptedPassword,
+        });
+      } else {
+        await addCredential({
+          name: values.name,
+          website: values.website,
+          maskedUsername,
+          encryptedUsername,
+          encryptedPassword,
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
+    onSaved();
   };
 
-  const canSave =
-    !!values.name && !!values.website && !!values.username && !!values.password;
+  const onDelete = async () => {
+    if (data) {
+      setLoading(true);
+      await deleteCredential(data.index);
+      setLoading(false);
+      onSaved();
+    }
+  };
 
   return (
     <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
       <Box sx={{ width: 500 }}>
+        {loading && (
+          <Box
+            sx={{
+              position: "absolute",
+              height: "100%",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backdropFilter: "blur(2px)",
+              zIndex: 1,
+              flexDirection: "column",
+            }}
+          >
+            <CircularProgress size={80} />
+            <Typography variant="h6" pt={2}>
+              Pending transaction ...
+            </Typography>
+          </Box>
+        )}
         <Box
           sx={{
             display: "flex",
@@ -125,13 +196,9 @@ const WebsiteDetailDrawer = ({
         >
           <Box sx={{ mr: 3, ml: 2 }}>
             {data ? (
-              <img
-                src={data.image}
-                alt={data.name}
-                style={{ height: "100px" }}
-              />
+              <WebsiteLogo website={data?.website} />
             ) : (
-              <EnhancedEncryptionIcon sx={{ fontSize: "100px" }} />
+              <EnhancedEncryptionIcon sx={{ fontSize: 75 }} />
             )}
           </Box>
           <Typography fontWeight="bold" variant="h5" noWrap>
@@ -203,7 +270,12 @@ const WebsiteDetailDrawer = ({
               sx={{ marginLeft: "auto" }}
               display={data ? "block" : "none"}
             >
-              <Button variant="contained" color="error" fullWidth>
+              <Button
+                variant="contained"
+                color="error"
+                fullWidth
+                onClick={onDelete}
+              >
                 Delete
               </Button>
             </Grid>
@@ -227,7 +299,7 @@ const FormTextField = ({
   onClick,
   show = true,
 }: any) => {
-  const [showPassword, setShowPassword] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <>
