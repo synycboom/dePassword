@@ -10,7 +10,7 @@ import fileHandler from './apis/file';
 
 const app: Application = express();
 const port = process.env.PORT || 8080;
-const domains: RegExp[] = [/\.bzz\.link$/];
+const domains: RegExp[] = [/\.ethswarm\.org$/, /\.bzz\.link$/];
 
 app.use(
   cors({
