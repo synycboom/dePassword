@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import setting from "../setting";
-import abi from "./abi";
+import abi from "./abi/DePassword.json";
 import { Credential, FileUpload } from "../types";
 
 export const getSigner = () => {

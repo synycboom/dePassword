@@ -43,7 +43,7 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
       reader.onload = async function (event) {
         try {
           const bytes = cryptojs.AES.decrypt((event?.target?.result as string) || "", key);
-          const decryptedContent = bytes.toString(CryptoJS.enc.Utf8);
+          const decryptedContent = atob(bytes.toString(cryptojs.enc.Utf8));
 
           resolve(new Blob([decryptedContent]));
         } catch (err) {
@@ -55,12 +55,13 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
   };
 
   const onOpen = async () => {
-    const { encryptedKey, swarmReference } = data;
+    const { encryptedKey, swarmReference, fileName, fileType } = data;
     console.log(data);
     const key = await decryptMessage(encryptedKey, account!);
     const encryptedBlob = await downloadFile(swarmReference);
     const decryptedBlob = await decryptFile(encryptedBlob, key);
-    const downloadUrl = window.URL.createObjectURL(decryptedBlob);
+    const file = new File([decryptedBlob], fileName ,{ type: fileType });
+    const downloadUrl = window.URL.createObjectURL(file);
 
     console.log(downloadUrl);
     setDownloadUrl(downloadUrl);

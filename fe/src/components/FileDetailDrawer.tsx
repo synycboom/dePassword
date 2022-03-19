@@ -109,7 +109,8 @@ const FileDetailDrawer = ({
       };
       reader.onload = async function (event) {
         try {
-          const encryptedContent = cryptojs.AES.encrypt((event?.target?.result as string) || "", key).toString();
+          const base64 = btoa((event?.target?.result as string) || "");
+          const encryptedContent = cryptojs.AES.encrypt(base64, key).toString();
 
           resolve(new Blob([encryptedContent]));
         } catch (err) {
@@ -148,7 +149,7 @@ const FileDetailDrawer = ({
       };
       await addFile(fileData);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       setLoading(false);
       return;
     }
