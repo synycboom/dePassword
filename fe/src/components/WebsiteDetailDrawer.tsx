@@ -59,12 +59,6 @@ const WebsiteDetailDrawer = ({
       !!values.password) ||
     !!data;
 
-  const clear = () => {
-    setValues(INITIAL_VALUES);
-    setShowUsername(!data);
-    setShowPassword(!data);
-  };
-
   useEffect(() => {
     if (open && data) {
       const { name, website } = data;
@@ -78,6 +72,12 @@ const WebsiteDetailDrawer = ({
       clear();
     }
   }, [open, data]);
+
+  const clear = () => {
+    setValues(INITIAL_VALUES);
+    setShowUsername(!data);
+    setShowPassword(!data);
+  };
 
   const onChange = (value: string, field: string) => {
     setValues({

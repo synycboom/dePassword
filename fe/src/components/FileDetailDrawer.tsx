@@ -12,15 +12,17 @@ import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import { ActualFileObject } from "filepond";
 import { FileUploadData } from "../types";
-import { getPublicKey, encryptMessage, decryptMessage } from "../helpers";
+import { getPublicKey, encryptMessage } from "../helpers";
 import CircularProgress from "@mui/material/CircularProgress";
+import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { useWeb3React } from "@web3-react/core";
-import { addFile } from "../contract";
+import { addFile, deleteFile } from "../contract";
+import { uploadFileToSwarm } from "../helpers/api";
 
-registerPlugin(FilePondPluginImagePreview);
+registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateSize);
 
 const ContainerStyle = styled(Box)`
   width: 500px;
@@ -66,10 +68,15 @@ const FileDetailDrawer = ({
   }, [open, data]);
 
   const onFileChange = async (files: any) => {
-    const file = files[0].file;
-    setFile(file);
-    const base64 = await convertFileToBase64(file);
-    setFileBase64(base64);
+    if (files.length) {
+      const file = files[0].file;
+      setFile(file);
+      const base64 = await convertFileToBase64(file);
+      setFileBase64(base64);
+    } else {
+      setFile(null);
+      setFileBase64("");
+    }
   };
 
   const convertFileToBase64 = async (
@@ -95,8 +102,9 @@ const FileDetailDrawer = ({
 
     const publicKey = await getPublicKey(account!);
     const encryptedFile = encryptMessage(publicKey, fileBase64);
-
     setLoading(true);
+    // const result = await uploadFileToSwarm(encryptedFile);
+    // console.log(result);
     const fileData = {
       name,
       fileName: file.name,
@@ -114,8 +122,16 @@ const FileDetailDrawer = ({
     onSaved();
   };
 
+  const onDelete = async () => {
+    if (data) {
+      setLoading(true);
+      await deleteFile(data.index);
+      setLoading(false);
+      onSaved();
+    }
+  };
+
   const canSave = !!name && !!fileBase64;
-  const isImage = true;
 
   return (
     <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
@@ -156,7 +172,7 @@ const FileDetailDrawer = ({
           <Grid container spacing={3} alignItems="center">
             {data ? (
               <Grid item xs={12} p={2}>
-                {isImage ? (
+                {data.fileType.includes("image") ? (
                   <img
                     className="preview-image"
                     src={`data:${data.fileType};base64, ${data.fileBase64}`}
@@ -191,6 +207,7 @@ const FileDetailDrawer = ({
                       onupdatefiles={onFileChange}
                       allowMultiple={false}
                       maxFiles={1}
+                      maxFileSize="10MB"
                       name="file"
                       labelIdle="Drag & Drop your files"
                     />
@@ -204,14 +221,20 @@ const FileDetailDrawer = ({
           <Grid container spacing={2}>
             {data ? (
               <Grid item xs={4}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  onClick={onSave}
+                <a
+                  download={data.fileName}
+                  style={{ textDecoration: "unset" }}
+                  href={`data:${data.fileType};base64, ${data.fileBase64}`}
                 >
-                  Download
-                </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={onSave}
+                  >
+                    Download
+                  </Button>
+                </a>
               </Grid>
             ) : (
               <Grid item xs={3}>
@@ -241,7 +264,12 @@ const FileDetailDrawer = ({
               sx={{ marginLeft: "auto" }}
               display={data ? "block" : "none"}
             >
-              <Button variant="contained" color="error" fullWidth>
+              <Button
+                variant="contained"
+                color="error"
+                fullWidth
+                onClick={onDelete}
+              >
                 Delete
               </Button>
             </Grid>

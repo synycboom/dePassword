@@ -3,6 +3,8 @@ import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import AddIcon from "@mui/icons-material/Add";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import Layout from "../components/Layout";
 import FileCard from "../components/FileCard";
 import FileDetailDrawer from "../components/FileDetailDrawer";
@@ -33,6 +35,15 @@ const PrivateFilePage = () => {
 
   return (
     <PrivateFilePageStyle>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={alert}
+        onClose={() => setAlert(false)}
+        autoHideDuration={3000}
+      >
+        <Alert severity="success">Updated success!</Alert>
+      </Snackbar>
+
       <FileDetailDrawer
         open={detailOpen}
         setOpen={setDetailOpen}
