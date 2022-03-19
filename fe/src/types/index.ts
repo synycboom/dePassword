@@ -20,6 +20,7 @@ export type FileUpload = {
   name: string;
   fileName: string;
   fileType: string;
+  encryptedKey: string;
   swarmReference: string;
 };
 
@@ -27,5 +28,6 @@ export type FileUploadData = {
   index: number;
   fileName: string;
   fileType: string;
+  encryptedKey: string;
   downloadUrl?: string;
 } & FileUpload;

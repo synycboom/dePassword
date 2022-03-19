@@ -12,9 +12,10 @@ import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import { ActualFileObject } from "filepond";
 import { FileUploadData } from "../types";
-import { getPublicKey, encryptMessage, decryptMessage } from "../helpers";
+import { getPublicKey, encryptMessage, generateKey } from "../helpers";
 import CircularProgress from "@mui/material/CircularProgress";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
+import cryptojs from 'crypto-js';
 
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
@@ -96,7 +97,8 @@ const FileDetailDrawer = ({
   };
 
   const encryptFile = async (
-    file: ActualFileObject
+    file: ActualFileObject,
+    key: string,
   ): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -107,8 +109,7 @@ const FileDetailDrawer = ({
       };
       reader.onload = async function (event) {
         try {
-          const publicKey = await getPublicKey(account!);
-          const encryptedContent = encryptMessage(publicKey, (event?.target?.result as string) || "");
+          const encryptedContent = cryptojs.AES.encrypt((event?.target?.result as string) || "", key).toString();
 
           resolve(new Blob([encryptedContent]));
         } catch (err) {
@@ -123,10 +124,14 @@ const FileDetailDrawer = ({
     if (!file || !name) return;
 
     let reference = '';
+    let encryptedKey = '';
     try {
       setEncrypting(true);
-      const blob = await encryptFile(file);
+      const publicKey = await getPublicKey(account!);
+      const key = generateKey();
+      const blob = await encryptFile(file, key);
       const encryptedFile = new File([blob], file.name ,{ type: file.type, lastModified: file.lastModified});
+      encryptedKey = encryptMessage(publicKey, key);
       reference = await uploadFile(encryptedFile);
     } finally {
       setEncrypting(false);
@@ -136,6 +141,7 @@ const FileDetailDrawer = ({
       setLoading(true);
       const fileData = {
         name,
+        encryptedKey,
         fileName: file.name,
         fileType: file.type,
         swarmReference: reference,
@@ -201,7 +207,7 @@ const FileDetailDrawer = ({
           >
             <CircularProgress size={80} />
             <Typography variant="h6" pt={2}>
-              Encrypting file ...
+              Encrypting and uploading a file ...
             </Typography>
           </Box>
         )}

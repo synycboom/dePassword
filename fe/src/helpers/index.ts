@@ -72,3 +72,14 @@ export const maskedText = (text: string, showCount: number) => {
   const tail = text.slice(-showCount);
   return `${head}${"*".repeat(text.length - showCount * 2)}${tail}`;
 };
+
+export const generateKey = () => {
+  const quota = 65536;
+  const n = 32;
+  const key = new Uint8Array(n);
+  for (var i = 0; i < n; i += quota) {
+    window.crypto.getRandomValues(key.subarray(i, i + Math.min(n - i, quota)));
+  }
+
+  return Buffer.from(key).toString('base64');
+};

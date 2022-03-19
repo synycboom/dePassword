@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useWeb3React } from "@web3-react/core";
+import cryptojs from 'crypto-js';
 import FileDetailDrawer from "./FileDetailDrawer";
 import { FileUploadData } from "../types";
 import { decryptMessage } from "../helpers";
@@ -30,6 +31,7 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
 
   const decryptFile = async (
     file: Blob,
+    key: string,
   ): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -40,7 +42,8 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
       };
       reader.onload = async function (event) {
         try {
-          const decryptedContent = await decryptMessage((event?.target?.result as string) || "", account!);
+          const bytes = cryptojs.AES.decrypt((event?.target?.result as string) || "", key);
+          const decryptedContent = bytes.toString(CryptoJS.enc.Utf8);
 
           resolve(new Blob([decryptedContent]));
         } catch (err) {
@@ -52,14 +55,14 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
   };
 
   const onOpen = async () => {
-    const { swarmReference } = data;
+    const { encryptedKey, swarmReference } = data;
     console.log(data);
+    const key = await decryptMessage(encryptedKey, account!);
     const encryptedBlob = await downloadFile(swarmReference);
-    // const encryptedContent = await encryptedBlob.text();
-    // const decrypedContent = await decryptMessage(encryptedContent, account!);
-    const decryptedBlob = await decryptFile(encryptedBlob);
+    const decryptedBlob = await decryptFile(encryptedBlob, key);
     const downloadUrl = window.URL.createObjectURL(decryptedBlob);
 
+    console.log(downloadUrl);
     setDownloadUrl(downloadUrl);
     setDetailOpen(true);
   };
