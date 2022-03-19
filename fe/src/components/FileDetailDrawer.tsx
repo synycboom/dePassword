@@ -78,24 +78,6 @@ const FileDetailDrawer = ({
     setFile(file);
   };
 
-  const convertFileToBase64 = async (
-    file: ActualFileObject
-  ): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsBinaryString(file);
-
-      reader.onload = function (event) {
-        const base64 = btoa((event?.target?.result as string) || "");
-        resolve(base64);
-      };
-      reader.onerror = function () {
-        console.log("can't read the file");
-        reject();
-      };
-    });
-  };
-
   const encryptFile = async (
     file: ActualFileObject,
     key: string,
@@ -103,9 +85,9 @@ const FileDetailDrawer = ({
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      reader.onerror = function () {
-        console.log("can't read the file");
-        reject();
+      reader.onerror = function (err) {
+        console.error(err);
+        reject(err);
       };
       reader.onload = async function (event) {
         try {
@@ -232,7 +214,7 @@ const FileDetailDrawer = ({
                 {data.fileType.includes("image") ? (
                   <img
                     className="preview-image"
-                    src={data.downloadUrl}
+                    src={`data:${data.fileType};base64, ${data.fileBase64}`}
                     alt="file"
                   />
                 ) : (
@@ -281,7 +263,7 @@ const FileDetailDrawer = ({
                 <a
                   download={data.fileName}
                   style={{ textDecoration: "unset" }}
-                  href={data.downloadUrl}
+                  href={`data:${data.fileType};base64, ${data.fileBase64}`}
                 >
                   <Button
                     variant="contained"

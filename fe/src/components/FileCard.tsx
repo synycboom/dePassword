@@ -20,9 +20,9 @@ type FileCardProps = {
 
 const FileCard = ({ data, onSaved }: FileCardProps) => {
   const [detailOpen, setDetailOpen] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState("");
+  const [fileBase64, setFileBase64] = useState("");
   const { account } = useWeb3React();
-  const { fileName, fileType } = data;
+  const { fileName } = data;
 
   const saved = () => {
     setDetailOpen(false);
@@ -36,14 +36,15 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      reader.onerror = function () {
-        console.log("can't read the file");
-        reject();
+      reader.onerror = function (err) {
+        console.error(err);
+        reject(err);
       };
       reader.onload = async function (event) {
         try {
           const bytes = cryptojs.AES.decrypt((event?.target?.result as string) || "", key);
-          const decryptedContent = atob(bytes.toString(cryptojs.enc.Utf8));
+          const base64 = bytes.toString(cryptojs.enc.Utf8);
+          const decryptedContent = atob(base64);
 
           resolve(new Blob([decryptedContent]));
         } catch (err) {
@@ -55,16 +56,12 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
   };
 
   const onOpen = async () => {
-    const { encryptedKey, swarmReference, fileName, fileType } = data;
-    console.log(data);
+    const { encryptedKey, swarmReference } = data;
     const key = await decryptMessage(encryptedKey, account!);
     const encryptedBlob = await downloadFile(swarmReference);
     const decryptedBlob = await decryptFile(encryptedBlob, key);
-    const file = new File([decryptedBlob], fileName ,{ type: fileType });
-    const downloadUrl = window.URL.createObjectURL(file);
 
-    console.log(downloadUrl);
-    setDownloadUrl(downloadUrl);
+    setFileBase64(btoa(await decryptedBlob.text()));
     setDetailOpen(true);
   };
 
@@ -73,7 +70,7 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
       <FileDetailDrawer
         data={{
           ...data,
-          downloadUrl,
+          fileBase64,
         }}
         open={detailOpen}
         setOpen={setDetailOpen}

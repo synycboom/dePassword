@@ -29,5 +29,5 @@ export type FileUploadData = {
   fileName: string;
   fileType: string;
   encryptedKey: string;
-  downloadUrl?: string;
+  fileBase64?: string;
 } & FileUpload;

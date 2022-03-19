@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
 import OutlinedInput from "@mui/material/OutlinedInput";
@@ -59,6 +59,12 @@ const WebsiteDetailDrawer = ({
       !!values.password) ||
     !!data;
 
+  const clear = useCallback(() => {
+    setValues(INITIAL_VALUES);
+    setShowUsername(!data);
+    setShowPassword(!data);
+  }, [data]);
+
   useEffect(() => {
     if (open && data) {
       const { name, website } = data;
@@ -71,13 +77,7 @@ const WebsiteDetailDrawer = ({
     } else {
       clear();
     }
-  }, [open, data]);
-
-  const clear = () => {
-    setValues(INITIAL_VALUES);
-    setShowUsername(!data);
-    setShowPassword(!data);
-  };
+  }, [open, data, clear]);
 
   const onChange = (value: string, field: string) => {
     setValues({
@@ -147,7 +147,7 @@ const WebsiteDetailDrawer = ({
         });
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
       setLoading(false);
       return;
     }

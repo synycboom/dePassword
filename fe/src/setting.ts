@@ -6,8 +6,10 @@ const requireEnv = (name: string): string => {
   return env;
 };
 
-export default {
+const setting = {
   CONTRACT_ADDRESS: requireEnv("REACT_APP_CONTRACT_ADDRESS"),
   SERVER_URL: requireEnv("REACT_APP_SERVER_URL"),
   SWARM_GATEWAY: requireEnv("REACT_APP_SWARM_GATEWAY"),
 };
+
+export default setting;
