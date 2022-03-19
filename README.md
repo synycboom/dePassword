@@ -27,5 +27,6 @@ $ npm ci
 ```
 5. Run the server
 ```
+$ npm run build
 $ npm run start
 ```
