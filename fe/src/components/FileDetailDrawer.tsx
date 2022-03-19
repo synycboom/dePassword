@@ -15,13 +15,13 @@ import { FileUploadData } from "../types";
 import { getPublicKey, encryptMessage, generateKey } from "../helpers";
 import CircularProgress from "@mui/material/CircularProgress";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
-import cryptojs from 'crypto-js';
+import cryptojs from "crypto-js";
 
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { useWeb3React } from "@web3-react/core";
 import { addFile, deleteFile } from "../contract";
-import { uploadFile } from '../helpers/api';
+import { uploadFile } from "../helpers/api";
 
 registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateSize);
 
@@ -33,7 +33,7 @@ const ContainerStyle = styled(Box)`
   }
 
   .preview-image {
-    width: 100%;
+    max-width: 100%;
   }
 `;
 
@@ -80,7 +80,7 @@ const FileDetailDrawer = ({
 
   const encryptFile = async (
     file: ActualFileObject,
-    key: string,
+    key: string
   ): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -106,14 +106,17 @@ const FileDetailDrawer = ({
   const onSave = async () => {
     if (!file || !name) return;
 
-    let reference = '';
-    let encryptedKey = '';
+    let reference = "";
+    let encryptedKey = "";
     try {
       setEncrypting(true);
       const publicKey = await getPublicKey(account!);
       const key = generateKey();
       const blob = await encryptFile(file, key);
-      const encryptedFile = new File([blob], file.name ,{ type: file.type, lastModified: file.lastModified});
+      const encryptedFile = new File([blob], file.name, {
+        type: file.type,
+        lastModified: file.lastModified,
+      });
       encryptedKey = encryptMessage(publicKey, key);
       reference = await uploadFile(encryptedFile);
     } finally {
@@ -210,7 +213,16 @@ const FileDetailDrawer = ({
         <Box p={4} pb={1}>
           <Grid container spacing={3} alignItems="center">
             {data ? (
-              <Grid item xs={12} p={2}>
+              <Grid
+                item
+                xs={12}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: 2,
+                  paddingBottom: 4,
+                }}
+              >
                 {data.fileType.includes("image") ? (
                   <img
                     className="preview-image"
