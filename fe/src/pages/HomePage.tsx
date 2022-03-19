@@ -4,6 +4,7 @@ import { useWeb3React } from "@web3-react/core";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
+import password64 from "../images/password-64px.png";
 
 const HomePageStyle = styled("div")(
   ({ theme }) => `
@@ -37,7 +38,7 @@ const HomePage = () => {
       <Typography variant="h5" noWrap component="div" marginBottom={4}>
         Decentralized Password Management
       </Typography>
-      <img className="logo" src="/images/password-64px.png" alt="logo" />
+      <img className="logo" src={password64} alt="logo" />
       <ConnectButton />
     </HomePageStyle>
   );

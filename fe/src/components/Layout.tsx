@@ -15,6 +15,7 @@ import ListItemText from "@mui/material/ListItemText";
 import AppsIcon from "@mui/icons-material/Apps";
 import ConnectButton from "../components/ConnectButton";
 import { useNavigate } from "react-router-dom";
+import password64 from "../images/password-64px.png";
 
 const drawerWidth = 240;
 
@@ -133,7 +134,7 @@ export default function Layout({ children }: any) {
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
-          <img src="/images/password-64px.png" alt="logo" className="logo" />
+          <img src={password64} alt="logo" className="logo" />
           <Typography variant="h5" noWrap component="div">
             <span style={{ color: "red" }}>De</span>Password
           </Typography>
