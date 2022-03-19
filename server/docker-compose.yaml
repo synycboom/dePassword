@@ -1,0 +1,8 @@
+version: "3"
+services:
+  server:
+    container_name: server
+    build: .
+    restart: "on-failure"
+    env_file:
+      - .env
