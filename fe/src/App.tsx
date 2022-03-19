@@ -5,14 +5,22 @@ import { useWeb3React } from "@web3-react/core";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import PrivateFilePage from "./pages/PrivateFilePage";
+import { injected } from "./components/ConnectButton";
 
 function App() {
   const navigate = useNavigate();
-  const { account } = useWeb3React();
+  const { account, activate } = useWeb3React();
 
   useEffect(() => {
     if (!account) navigate("/");
   }, [account, navigate]);
+
+  useEffect(() => {
+    const connected = window.localStorage.getItem("connected");
+    if (connected) {
+      activate(injected);
+    }
+  }, []);
 
   return (
     <Routes>

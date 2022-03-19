@@ -13,6 +13,7 @@ const ConnectButton = () => {
 
   const connect = async () => {
     try {
+      window.localStorage.setItem("connected", "true");
       await activate(injected);
     } catch (ex) {
       console.error(ex);
@@ -21,7 +22,8 @@ const ConnectButton = () => {
 
   const disconnect = async () => {
     try {
-      deactivate();
+      window.localStorage.removeItem("connected");
+      await deactivate();
     } catch (ex) {
       console.error(ex);
     }

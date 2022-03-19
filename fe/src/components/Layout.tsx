@@ -153,7 +153,7 @@ export default function Layout({ children }: any) {
           ].map(({ label, icon, link }) => (
             <ListItemButton
               key={label}
-              selected={window.location.pathname === link}
+              selected={window.location.hash === `#${link}`}
               sx={{
                 minHeight: 48,
                 justifyContent: open ? "initial" : "center",
