@@ -8,5 +8,6 @@ const requireEnv = (name: string): string => {
 
 export default {
   CONTRACT_ADDRESS: requireEnv("REACT_APP_CONTRACT_ADDRESS"),
-  API_URL: requireEnv("REACT_APP_API_URL"),
+  SERVER_URL: requireEnv("REACT_APP_SERVER_URL"),
+  SWARM_GATEWAY: requireEnv("REACT_APP_SWARM_GATEWAY"),
 };
