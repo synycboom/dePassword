@@ -10,7 +10,7 @@ $ cd contracts
 $ npx hardhat compile
 $ npm run rinkeby:deploy-v1
 ```
-Deployed DePassword contract on Rinkeby: 0x1eA0b3dAb82B2802B122D8C78B424964E9B26022
+Deployed DePassword contract on Rinkeby: 0xEaf8FDc9ce9C59162f32d43C4128F648FA46b275
 
 ## Running a server
 1. You need to deploy your bee node. You can follow this guide https://docs.ethswarm.org/docs/installation/quick-start
