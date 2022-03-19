@@ -1,7 +1,7 @@
 # DePassword
 A decentrailzed password and file management. Only users have control over the data that being encrypted in Swarm and a smart contract.
 
-## Project Architecture
+## Architecture
 <div width="100%">
   <img alt="depassword-architecture" src="docs/architecture.png"/>
 </div>
