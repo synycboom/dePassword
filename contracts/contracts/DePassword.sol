@@ -15,20 +15,12 @@ contract DePassword {
         string name;
         string fileName;
         string fileType;
+        string encryptedKey;
         string swarmReference;
     }
 
     mapping(address => Credential[]) private _credentials;
     mapping(address => File[]) private _files;
-    mapping(address => string) private _keys;
-
-    function updateKey(string calldata _key) public {
-        _keys[msg.sender] = _key;
-    }
-
-    function getKey() public view returns (string memory) {
-        return _keys[msg.sender];
-    }
 
     function fileCount() public view returns (uint256 count) {
         return _files[msg.sender].length;

@@ -40,19 +40,6 @@ describe("DePassword", function () {
     expect(fileA.swarmReference).to.eq(fileB.swarmReference);
   }
 
-  describe("Updating and getting keys", () => {
-    it("should update a key and getting the same key", async () => {
-        const [userA] = await ethers.getSigners();
-        const key = "encrypted";
-
-        await dePassword.connect(userA).updateKey(key);
-
-        const gotkey = await dePassword.connect(userA).getKey();
-
-        expect(gotkey).to.eq(key);
-    });
-
-  });
   describe("Two users are using the contract", () => {
     context("When listing empty credentials", () => {
       it("should work correctly", async () => {
@@ -111,12 +98,14 @@ describe("DePassword", function () {
           name: 'file-A',
           fileName: "test.png",
           fileType: "image/png",
+          encryptedKey: "!!!!!",
           swarmReference: 'A',
         };
         const fileB = {
           name: 'file-B',
           fileName: "test.png",
           fileType: "image/png",
+          encryptedKey: "!!!!!",
           swarmReference: 'B',
         };
 
@@ -252,6 +241,7 @@ describe("DePassword", function () {
           name: "file-A",
           fileName: "test.png",
           fileType: "image/png",
+          encryptedKey: "!!!!!",
           swarmReference: "A",
         };
 
@@ -267,12 +257,14 @@ describe("DePassword", function () {
           name: "file-A",
           fileName: "test.png",
           fileType: "image/png",
+          encryptedKey: "!!!!!",
           swarmReference: "A",
         };
         const fileB = {
           name: "file-B",
           fileName: "test.png",
           fileType: "image/png",
+          encryptedKey: "!!!!!",
           swarmReference: "B",
         };
 
