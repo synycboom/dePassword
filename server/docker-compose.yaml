@@ -6,3 +6,5 @@ services:
     restart: "on-failure"
     env_file:
       - .env
+    ports:
+      - 8080:8080
