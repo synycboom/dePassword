@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useWeb3React } from "@web3-react/core";
-import cryptojs from 'crypto-js';
+import cryptojs from "crypto-js";
 import FileDetailDrawer from "./FileDetailDrawer";
 import { FileUploadData } from "../types";
 import { decryptMessage } from "../helpers";
@@ -22,17 +22,14 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [fileBase64, setFileBase64] = useState("");
   const { account } = useWeb3React();
-  const { fileName } = data;
+  const { name } = data;
 
   const saved = () => {
     setDetailOpen(false);
     onSaved();
   };
 
-  const decryptFile = async (
-    file: Blob,
-    key: string,
-  ): Promise<Blob> => {
+  const decryptFile = async (file: Blob, key: string): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
@@ -42,7 +39,10 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
       };
       reader.onload = async function (event) {
         try {
-          const bytes = cryptojs.AES.decrypt((event?.target?.result as string) || "", key);
+          const bytes = cryptojs.AES.decrypt(
+            (event?.target?.result as string) || "",
+            key
+          );
           const base64 = bytes.toString(cryptojs.enc.Utf8);
           const decryptedContent = atob(base64);
 
@@ -91,7 +91,7 @@ const FileCard = ({ data, onSaved }: FileCardProps) => {
           </Box>
           <Divider />
           <Typography fontWeight="" noWrap pt={2}>
-            {fileName}
+            {name}
           </Typography>
         </CardContent>
       </CardActionArea>
