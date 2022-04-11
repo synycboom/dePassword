@@ -13,6 +13,7 @@ A decentrailzed password and file management. Only users have control over the d
 ## Demo Link
 Note that the demo is running on Rinkeby testnet for the smart contract, and Goerli testnet for the Bee node. Please change your network to "Rinkeby" before using the app.
 
+**The Bee node was already down some features might not work correctly**
 - BZZ Link: https://bah5acgzapwqvde6ydrsvl65bfpt7vjzhfsts22u7lydxrtcbqdjr5poi76aa.bzz.link/
 - BZZ Link with ENS Name: https://synycboom.bzz.link (Actually, we set it to https://depassword.synycboom.bzz.link but there is a SSL certification problem)
 
