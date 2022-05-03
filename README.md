@@ -1,12 +1,21 @@
 # DePassword
 A decentrailzed password and file management. Only users have control over the data that being encrypted in Swarm and a smart contract.
 
+## Information
+Project Name: dePassword
+Link: https://github.com/synycboom/dePassword
+Video: https://youtu.be/5BE_pei7DQY
+Discord ID: manotien#2332
+Person of contact: manotien#2332
+UD registered email address: manotien@gmail.com
+
 ## Architecture
 <div width="100%">
   <img alt="depassword-architecture" src="docs/architecture.png"/>
 </div>
 
 ## Demo Video
+- https://youtu.be/HefyHiOwdAM (Integrating UNS “Login With Unstoppable”)
 - https://youtu.be/gEn3SxuLy4E
 - [![Alt text](https://img.youtube.com/vi/gEn3SxuLy4E/1.jpg)](https://www.youtube.com/watch?v=gEn3SxuLy4E)
 
@@ -14,6 +23,7 @@ A decentrailzed password and file management. Only users have control over the d
 Note that the demo is running on Rinkeby testnet for the smart contract, and Goerli testnet for the Bee node. Please change your network to "Rinkeby" before using the app.
 
 **The Bee node was already down some features might not work correctly**
+- https://depassword.firebaseapp.com/
 - BZZ Link: https://bah5acgzapwqvde6ydrsvl65bfpt7vjzhfsts22u7lydxrtcbqdjr5poi76aa.bzz.link/
 - BZZ Link with ENS Name: https://synycboom.bzz.link (Actually, we set it to https://depassword.synycboom.bzz.link but there is a SSL certification problem)
 
