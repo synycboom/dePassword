@@ -3,10 +3,7 @@ import { encrypt } from "@metamask/eth-sig-util";
 
 export const formatAddress = (address: string, showLength: number): string => {
   const length = address.length;
-  return `${address.substring(0, showLength)}...${address.substring(
-    length - showLength,
-    length
-  )}`;
+  return `${address.substring(0, showLength)}...${address.substring(length - showLength, length)}`;
 };
 
 export const encryptMessage = (publicKey: string, data: any) => {
@@ -24,10 +21,7 @@ export const encryptMessage = (publicKey: string, data: any) => {
   );
 };
 
-export const decryptMessage = (
-  encryptedMessage: string,
-  account: string
-): Promise<string> => {
+export const decryptMessage = (encryptedMessage: string, account: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     window.ethereum!.request!({
       method: "eth_decrypt",
@@ -81,5 +75,5 @@ export const generateKey = () => {
     window.crypto.getRandomValues(key.subarray(i, i + Math.min(n - i, quota)));
   }
 
-  return Buffer.from(key).toString('base64');
+  return Buffer.from(key).toString("base64");
 };

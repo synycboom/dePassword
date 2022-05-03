@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { HashRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { RecoilRoot } from "recoil";
 import { Web3ReactProvider } from "@web3-react/core";
 import { ethers } from "ethers";
@@ -19,9 +19,9 @@ ReactDOM.render(
   <React.StrictMode>
     <RecoilRoot>
       <Web3ReactProvider getLibrary={getLibrary}>
-        <HashRouter>
+        <BrowserRouter>
           <App />
-        </HashRouter>
+        </BrowserRouter>
       </Web3ReactProvider>
     </RecoilRoot>
   </React.StrictMode>,

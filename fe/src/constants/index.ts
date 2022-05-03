@@ -4,8 +4,4 @@ export enum ChainId {
   Goerli = 5,
 }
 
-export const SUPPORTED_CHAINS = [
-  ChainId.Ethereum,
-  ChainId.Goerli,
-  ChainId.Rinkeby,
-];
+export const SUPPORTED_CHAINS = [ChainId.Ethereum, ChainId.Goerli, ChainId.Rinkeby, 137];

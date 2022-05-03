@@ -5,7 +5,7 @@ import { useWeb3React } from "@web3-react/core";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import PrivateFilePage from "./pages/PrivateFilePage";
-import { injected } from "./components/ConnectButton";
+import { uauth } from "./helpers/connector";
 
 function App() {
   const navigate = useNavigate();
@@ -16,11 +16,19 @@ function App() {
   }, [account, navigate]);
 
   useEffect(() => {
-    const connected = window.localStorage.getItem("connected");
-    if (connected) {
-      activate(injected);
-    }
-  }, []);
+    uauth.uauth
+      .user()
+      .then((user: any) => {
+        activate(uauth);
+        console.log("User information:", user);
+      })
+      .catch(() => {
+        const connected = window.localStorage.getItem("connected");
+        if (connected) {
+          activate(uauth);
+        }
+      });
+  }, [activate]);
 
   return (
     <Routes>
