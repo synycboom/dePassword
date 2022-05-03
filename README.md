@@ -4,7 +4,7 @@ A decentrailzed password and file management. Only users have control over the d
 ## Information
 - Project Name: dePassword
 - Link: https://github.com/synycboom/dePassword
-- Video: https://youtu.be/5BE_pei7DQY
+- Video: https://youtu.be/HefyHiOwdAM
 - Discord ID: manotien#2332
 - Person of contact: manotien#2332
 - UD registered email address: manotien@gmail.com
